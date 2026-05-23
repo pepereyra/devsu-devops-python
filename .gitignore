@@ -1,0 +1,29 @@
+*.log
+*.pot
+*.pyc
+__pycache__/
+
+db.sqlite3
+
+# Virtual environments
+.venv/
+venv/
+
+# Environment variables
+.env
+
+# VSCode
+.vscode/
+
+# Coverage
+htmlcov/
+.coverage
+.pytest_cache/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# Mac/Linux
+.DS_Store

@@ -57,7 +57,7 @@ jobs:
         run: |
           docker build -t $IMAGE_NAME:${{ github.sha }} -t $IMAGE_NAME:latest .
 
-      - name: Run container
+            - name: Run container
         run: |
           docker run -d --name app \
             -p 8000:8000 \
@@ -65,16 +65,18 @@ jobs:
             -e DJANGO_DEBUG=False \
             -e DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1 \
             -e DATABASE_NAME=db.sqlite3 \
-            $IMAGE_NAME:${{ github.sha }}
+            $IMAGE_NAME:${{ github.sha }} \
+            sh -c "python manage.py migrate && gunicorn demo.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 60"
 
       - name: Wait for application
         run: sleep 15
 
-      - name: Validate health endpoint
+      - name: Validate health endpoints
         run: |
           curl --fail http://localhost:8000/api/health/live/
           curl --fail http://localhost:8000/api/health/ready/
-          
+          curl --fail http://localhost:8000/api/users/
+
       - name: Run Trivy vulnerability scan
         uses: aquasecurity/trivy-action@master
         with:

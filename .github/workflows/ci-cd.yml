@@ -32,6 +32,14 @@ jobs:
         with:
           python-version: "3.11.3"
 
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      
       - name: Install dependencies
         run: |
           pip install --upgrade pip
@@ -49,6 +57,24 @@ jobs:
         run: |
           docker build -t $IMAGE_NAME:${{ github.sha }} -t $IMAGE_NAME:latest .
 
+      - name: Run container
+        run: |
+          docker run -d --name app \
+            -p 8000:8000 \
+            -e DJANGO_SECRET_KEY=test-secret-key \
+            -e DJANGO_DEBUG=False \
+            -e DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1 \
+            -e DATABASE_NAME=db.sqlite3 \
+            $IMAGE_NAME:${{ github.sha }}
+
+      - name: Wait for application
+        run: sleep 15
+
+      - name: Validate health endpoint
+        run: |
+          curl --fail http://localhost:8000/api/health/live/
+          curl --fail http://localhost:8000/api/health/ready/
+          
       - name: Run Trivy vulnerability scan
         uses: aquasecurity/trivy-action@master
         with:

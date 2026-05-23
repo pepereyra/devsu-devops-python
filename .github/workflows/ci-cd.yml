@@ -57,7 +57,7 @@ jobs:
         run: |
           docker build -t $IMAGE_NAME:${{ github.sha }} -t $IMAGE_NAME:latest .
 
-            - name: Run container
+      - name: Run container
         run: |
           docker run -d --name app \
             -p 8000:8000 \
@@ -69,7 +69,13 @@ jobs:
             sh -c "python manage.py migrate && gunicorn demo.wsgi:application --bind 0.0.0.0:8000 --workers 2 --timeout 60"
 
       - name: Wait for application
-        run: sleep 15
+        run: |
+          for i in {1..30}; do
+            curl -f http://localhost:8000/api/health/live/ && exit 0
+            sleep 2
+          done
+          docker logs app
+          exit 1
 
       - name: Validate health endpoints
         run: |

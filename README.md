@@ -1,139 +1,279 @@
-# Demo Devops Python
+# Demo DevOps Python
 
-This is a simple application to be used in the technical test of DevOps.
+![CI-CD](https://github.com/pepereyra/devsu-demo-devops-python/actions/workflows/ci-cd.yml/badge.svg)
 
-## Getting Started
+Production-ready DevOps technical assessment project based on Django, Docker, Kubernetes, GitHub Actions, Terraform and Google Cloud Platform.
 
-### Prerequisites
+---
 
-- Python 3.11.3
+# Architecture
 
-### Installation
-
-Clone this repo.
-
-```bash
-git clone https://bitbucket.org/devsu/demo-devops-python.git
+```text
+Developer
+   |
+   v
+GitHub Repository
+   |
+   v
+GitHub Actions CI/CD
+   |
+   +--> Ruff Static Analysis
+   +--> Unit Tests
+   +--> Coverage Report
+   +--> Trivy Security Scan
+   +--> Docker Build
+   |
+   v
+GHCR Container Registry
+   |
+   v
+GitOps Repository
+   |
+   v
+Kustomize Overlays
+   |
+   v
+GKE Cluster
+   |
+   +--> Deployment
+   +--> HPA
+   +--> Service
+   +--> Ingress
+   +--> Migration Job
+   |
+   v
+Cloud SQL MySQL
 ```
 
-Install dependencies.
+---
+
+# Technologies
+
+- Python 3.11
+- Django
+- Docker
+- Kubernetes (GKE Autopilot)
+- Terraform
+- GitHub Actions
+- GitOps with Kustomize
+- Cloud SQL MySQL
+- Trivy
+- Ruff
+- Gunicorn
+
+---
+
+# Features
+
+- Dockerized application
+- CI/CD pipeline
+- GitOps workflow
+- Horizontal Pod Autoscaler
+- Kubernetes Ingress
+- Dedicated migration Job
+- Static code analysis
+- Vulnerability scanning
+- Test coverage reporting
+- Infrastructure as Code
+- Security hardening
+
+---
+
+# Local Development
+
+## Requirements
+
+- Python 3.11
+- pip
+
+## Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Migrate database
+## Run migrations
 
 ```bash
-py manage.py makemigrations
-py manage.py migrate
+python manage.py migrate
 ```
 
-### Database
-
-The database is generated as a file in the main path when the project is first run, and its name is `db.sqlite3`.
-
-Consider giving access permissions to the file for proper functioning.
-
-## Usage
-
-To run tests you can use this command.
+## Run tests
 
 ```bash
-py manage.py test
+python manage.py test
 ```
 
-To run locally the project you can use this command.
+## Run locally
 
 ```bash
-py manage.py runserver
+python manage.py runserver
 ```
 
-Open http://localhost:8000/api/ with your browser to see the result.
+Application available at:
 
-### Features
+```text
+http://localhost:8000/api/
+```
 
-These services can perform,
+---
 
-#### Create User
+# Docker
 
-To create a user, the endpoint **/api/users/** must be consumed with the following parameters:
+## Build image
 
 ```bash
-  Method: POST
+docker build -t devsu-devops-python .
 ```
+
+## Run container
+
+```bash
+docker run -p 8000:8000 devsu-devops-python
+```
+
+---
+
+# CI/CD Pipeline
+
+Implemented using GitHub Actions.
+
+Pipeline stages:
+
+- Dependency installation
+- Static code analysis with Ruff
+- Unit tests
+- Coverage report generation
+- Docker build
+- Container validation
+- Healthcheck validation
+- Trivy vulnerability scan
+- Push image to GHCR
+- GitOps repository update
+
+---
+
+# Kubernetes Deployment
+
+The application is deployed on Google Kubernetes Engine (GKE) using:
+
+- Deployment
+- Service
+- Ingress
+- ConfigMaps
+- Secrets
+- HPA
+- Migration Job
+- Kustomize overlays
+
+Environments:
+
+- dev
+- prod
+
+---
+
+# Terraform Infrastructure
+
+Terraform provisions:
+
+- VPC
+- Subnet
+- GKE Autopilot Cluster
+- Cloud SQL MySQL
+
+---
+
+# Security Practices
+
+- Non-root containers
+- Read-only root filesystem
+- Linux capabilities dropped
+- Kubernetes Secrets
+- Trivy vulnerability scanning
+- Static code analysis
+- Dedicated migration jobs
+
+---
+
+# Public Endpoint
+
+Example endpoint:
+
+```text
+http://8.34.213.158/api/users/
+```
+
+---
+
+# API Endpoints
+
+## Create User
+
+```http
+POST /api/users/
+```
+
+Request:
 
 ```json
 {
-    "dni": "dni",
-    "name": "name"
+  "dni": "12345678",
+  "name": "Pedro"
 }
 ```
 
-If the response is successful, the service will return an HTTP Status 200 and a message with the following structure:
+---
 
-```json
-{
-    "id": 1,
-    "dni": "dni",
-    "name": "name"
-}
+## Get Users
+
+```http
+GET /api/users/
 ```
 
-If the response is unsuccessful, we will receive status 400 and the following message:
+---
 
-```json
-{
-    "detail": "error"
-}
+## Healthcheck
+
+```http
+GET /api/health/live/
 ```
 
-#### Get Users
-
-To get all users, the endpoint **/api/users** must be consumed with the following parameters:
-
-```bash
-  Method: GET
+```http
+GET /api/health/ready/
 ```
 
-If the response is successful, the service will return an HTTP Status 200 and a message with the following structure:
+---
 
-```json
-[
-    {
-        "id": 1,
-        "dni": "dni",
-        "name": "name"
-    }
-]
+# Notes
+
+Cloud SQL currently allows public access for technical assessment simplicity.
+
+In production environments this should be replaced with:
+
+- Private networking
+- Authorized CIDRs
+- Cloud SQL Auth Proxy
+- TLS enforcement
+
+---
+
+# Repositories
+
+Application repository:
+
+```text
+https://github.com/pepereyra/devsu-demo-devops-python
 ```
 
-#### Get User
+GitOps repository:
 
-To get an user, the endpoint **/api/users/<id>** must be consumed with the following parameters:
-
-```bash
-  Method: GET
+```text
+https://github.com/pepereyra/devsu-devops-python-gitops
 ```
 
-If the response is successful, the service will return an HTTP Status 200 and a message with the following structure:
+---
 
-```json
-{
-    "id": 1,
-    "dni": "dni",
-    "name": "name"
-}
-```
+# License
 
-If the user id does not exist, we will receive status 404 and the following message:
-
-```json
-{
-    "detail": "Not found."
-}
-```
-
-## License
-
-Copyright © 2023 Devsu. All rights reserved.
+Technical assessment project for DevOps evaluation purposes.

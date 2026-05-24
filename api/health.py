@@ -1,8 +1,5 @@
 from django.db import connection
-from django.db.utils import OperationalError
 from django.http import JsonResponse
-
-from .models import User
 
 
 def liveness(request):
@@ -13,20 +10,12 @@ def readiness(request):
     try:
         connection.ensure_connection()
 
-        table_name = User._meta.db_table
+        existing_tables = connection.introspection.table_names()
 
-        with connection.cursor() as cursor:
-            cursor.execute(
-                "SELECT name FROM sqlite_master "
-                "WHERE type='table' AND name=%s;",
-                [table_name]
-            )
-
-            result = cursor.fetchone()
-
-        if not result:
-            raise OperationalError(
-                f"table '{table_name}' not found"
+        if "api_user" not in existing_tables:
+            return JsonResponse(
+                {"status": "not_ready", "error": "table 'api_user' not found"},
+                status=503
             )
 
         return JsonResponse({"status": "ready"})

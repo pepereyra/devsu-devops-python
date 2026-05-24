@@ -39,7 +39,7 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-      
+
       - name: Install dependencies
         run: |
           pip install --upgrade pip
@@ -106,3 +106,47 @@ jobs:
         run: |
           docker push $IMAGE_NAME:${{ github.sha }}
           docker push $IMAGE_NAME:latest
+
+  update-gitops:
+    needs: test-build-scan
+
+    if: github.event_name != 'pull_request'
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout GitOps repository
+        uses: actions/checkout@v4
+        with:
+          repository: pepereyra/devsu-devops-python-gitops
+          token: ${{ secrets.GITOPS_TOKEN }}
+          path: gitops
+
+      - name: Select target overlay
+        run: |
+          if [ "${GITHUB_REF_NAME}" = "develop" ]; then
+            echo "TARGET_OVERLAY=dev" >> $GITHUB_ENV
+          elif [ "${GITHUB_REF_NAME}" = "main" ]; then
+            echo "TARGET_OVERLAY=prod" >> $GITHUB_ENV
+          else
+            echo "Unsupported branch: ${GITHUB_REF_NAME}"
+            exit 1
+          fi
+
+      - name: Update image tag
+        run: |
+          cd gitops
+          sed -i "s|newTag: .*|newTag: ${GITHUB_SHA}|" k8s/overlays/${TARGET_OVERLAY}/kustomization.yaml
+
+      - name: Commit and push changes
+        run: |
+          cd gitops
+
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+          git add k8s/overlays/${TARGET_OVERLAY}/kustomization.yaml
+
+          git commit -m "ci: update ${TARGET_OVERLAY} image tag to ${GITHUB_SHA}" || echo "No changes to commit"
+
+          git push
